@@ -29,7 +29,7 @@ useEffect(() => {
 
   const handleDeposit = async () => {
     if (!amount) return;
-    await axios.post(`http://banking-finance-api-production.up.railway.app/accounts/1/deposit?amount=${amount}`, {}, { headers });
+    await axios.post(`https://banking-finance-api-production.up.railway.app/accounts/1/deposit?amount=${amount}`, {}, { headers });
     setMessage(`✅ Deposited ₹${amount} successfully!`);
     setAmount('');
     fetchAccount();
@@ -39,7 +39,7 @@ useEffect(() => {
   const handleWithdraw = async () => {
     if (!amount) return;
     try {
-      await axios.post(`http://banking-finance-api-production.up.railway.app/accounts/1/withdraw?amount=${amount}`, {}, { headers });
+      await axios.post(`https://banking-finance-api-production.up.railway.app/accounts/1/withdraw?amount=${amount}`, {}, { headers });
       setMessage(`✅ Withdrew ₹${amount} successfully!`);
       setAmount('');
       fetchAccount();
