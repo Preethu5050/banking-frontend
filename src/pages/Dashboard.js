@@ -15,12 +15,17 @@ function Dashboard() {
 
   const fetchAccount = async () => {
     try {
-      const res = await axios.get('http://banking-finance-api-production.up.railway.app/accounts/1', { headers });
+      const res = await axios.get('https://your-railway-url.up.railway.app/accounts/1', { headers });
       setAccount(res.data);
-      const txRes = await axios.get('http://banking-finance-api-production.up.railway.app/accounts/1/transactions', { headers });
+      const txRes = await axios.get('https://your-railway-url.up.railway.app/accounts/1/transactions', { headers });
       setTransactions(txRes.data);
     } catch (err) { navigate('/'); }
   };
+
+useEffect(() => { 
+    fetchAccount(); 
+    // eslint-disable-next-line
+  }, []);
 
   const handleDeposit = async () => {
     if (!amount) return;
