@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const API = 'https://banking-finance-api-production.up.railway.app';
+
 function Dashboard() {
   const [account, setAccount] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -11,25 +13,21 @@ function Dashboard() {
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
 
-  useEffect(() => { fetchAccount(); }, []);
-
   const fetchAccount = async () => {
     try {
-      const res = await axios.get('https://your-railway-url.up.railway.app/accounts/1', { headers });
+      const res = await axios.get(`${API}/accounts/1`, { headers });
       setAccount(res.data);
-      const txRes = await axios.get('https://your-railway-url.up.railway.app/accounts/1/transactions', { headers });
+      const txRes = await axios.get(`${API}/accounts/1/transactions`, { headers });
       setTransactions(txRes.data);
     } catch (err) { navigate('/'); }
   };
 
-useEffect(() => { 
-    fetchAccount(); 
-    // eslint-disable-next-line
-  }, []);
+  // eslint-disable-next-line
+  useEffect(() => { fetchAccount(); }, []);
 
   const handleDeposit = async () => {
     if (!amount) return;
-    await axios.post(`https://banking-finance-api-production.up.railway.app/accounts/1/deposit?amount=${amount}`, {}, { headers });
+    await axios.post(`${API}/accounts/1/deposit?amount=${amount}`, {}, { headers });
     setMessage(`✅ Deposited ₹${amount} successfully!`);
     setAmount('');
     fetchAccount();
@@ -39,7 +37,7 @@ useEffect(() => {
   const handleWithdraw = async () => {
     if (!amount) return;
     try {
-      await axios.post(`https://banking-finance-api-production.up.railway.app/accounts/1/withdraw?amount=${amount}`, {}, { headers });
+      await axios.post(`${API}/accounts/1/withdraw?amount=${amount}`, {}, { headers });
       setMessage(`✅ Withdrew ₹${amount} successfully!`);
       setAmount('');
       fetchAccount();
@@ -50,20 +48,13 @@ useEffect(() => {
     }
   };
 
-  const handleLogout = () => { localStorage.removeItem('token'); navigate('/'); };
-
-  if (!account) return <div style={{ background: '#0f1923', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>Loading...</div>;
-
   const exportCSV = () => {
-    const headers = ['ID', 'Type', 'Amount', 'Balance After', 'Date'];
+    const headers2 = ['ID', 'Type', 'Amount', 'Balance After', 'Date'];
     const rows = transactions.map(tx => [
-      tx.id,
-      tx.type,
-      tx.amount,
-      tx.balanceAfter,
+      tx.id, tx.type, tx.amount, tx.balanceAfter,
       new Date(tx.timestamp).toLocaleDateString('en-IN')
     ]);
-    const csvContent = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const csvContent = [headers2, ...rows].map(r => r.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -71,6 +62,10 @@ useEffect(() => {
     a.download = `${account.accountNumber}_transactions.csv`;
     a.click();
   };
+
+  const handleLogout = () => { localStorage.removeItem('token'); navigate('/'); };
+
+  if (!account) return <div style={{ background: '#0f1923', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>Loading...</div>;
 
   return (
     <div style={s.page}>
@@ -99,13 +94,7 @@ useEffect(() => {
 
         <div style={s.card}>
           <div style={s.cardTitle}>Quick Transfer</div>
-          <input
-            style={s.input}
-            type="number"
-            placeholder="Enter amount (₹)"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-          />
+          <input style={s.input} type="number" placeholder="Enter amount (₹)" value={amount} onChange={e => setAmount(e.target.value)} />
           <div style={s.btnRow}>
             <button style={s.depositBtn} onClick={handleDeposit}>↓ Deposit</button>
             <button style={s.withdrawBtn} onClick={handleWithdraw}>↑ Withdraw</button>
@@ -113,10 +102,11 @@ useEffect(() => {
         </div>
 
         <div style={s.card}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <div style={s.cardTitle}>Transaction History</div>
-        <button style={s.exportBtn} onClick={exportCSV}>↓ Export CSV</button>
-        </div>          {transactions.length === 0 ? (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={s.cardTitle}>Transaction History</div>
+            <button style={s.exportBtn} onClick={exportCSV}>↓ Export CSV</button>
+          </div>
+          {transactions.length === 0 ? (
             <div style={s.emptyTx}>No transactions yet</div>
           ) : (
             transactions.map(tx => (
@@ -161,11 +151,12 @@ const s = {
   accNum: { fontSize: '12px', color: '#5ba4f5', letterSpacing: '1px' },
   activeBadge: { fontSize: '11px', color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '3px 8px', borderRadius: '10px' },
   card: { background: '#17212e', border: '1px solid #1e2d3d', borderRadius: '12px', padding: '16px', marginBottom: '12px' },
-  cardTitle: { fontSize: '13px', color: '#6b7f93', letterSpacing: '0.5px', marginBottom: '12px', textTransform: 'uppercase' },
+  cardTitle: { fontSize: '13px', color: '#6b7f93', letterSpacing: '0.5px', textTransform: 'uppercase' },
   input: { width: '100%', background: '#0f1923', border: '1px solid #1e2d3d', borderRadius: '6px', padding: '10px', color: 'white', fontSize: '14px', marginBottom: '10px', boxSizing: 'border-box' },
   btnRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' },
   depositBtn: { background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: '8px', color: '#34d399', padding: '10px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
   withdrawBtn: { background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '8px', color: '#f87171', padding: '10px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' },
+  exportBtn: { background: 'transparent', border: '1px solid #1e2d3d', borderRadius: '6px', color: '#5ba4f5', padding: '5px 10px', fontSize: '11px', cursor: 'pointer' },
   successMsg: { background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399', borderRadius: '8px', padding: '10px', fontSize: '13px', marginBottom: '12px', textAlign: 'center' },
   errorMsg: { background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', borderRadius: '8px', padding: '10px', fontSize: '13px', marginBottom: '12px', textAlign: 'center' },
   txRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #1e2d3d' },
@@ -177,8 +168,7 @@ const s = {
   txAmtDep: { fontSize: '13px', fontWeight: 'bold', color: '#34d399', textAlign: 'right' },
   txAmtWit: { fontSize: '13px', fontWeight: 'bold', color: '#f87171', textAlign: 'right' },
   txBalance: { fontSize: '11px', color: '#6b7f93', textAlign: 'right' },
-  emptyTx: { color: '#6b7f93', fontSize: '13px', textAlign: 'center', padding: '16px 0' },
-  exportBtn: { background: 'transparent', border: '1px solid #1e2d3d', borderRadius: '6px', color: '#5ba4f5', padding: '5px 10px', fontSize: '11px', cursor: 'pointer' },
+  emptyTx: { color: '#6b7f93', fontSize: '13px', textAlign: 'center', padding: '16px 0' }
 };
 
 export default Dashboard;

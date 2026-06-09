@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const API = 'https://banking-finance-api-production.up.railway.app';
+
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -11,7 +13,7 @@ function Login() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('https://banking-finance-api-production.up.railway.app/auth/login', { username, password });
+      const response = await axios.post(`${API}/auth/login`, { username, password });
       localStorage.setItem('token', response.data.token);
       navigate('/dashboard');
     } catch (err) {
@@ -21,7 +23,7 @@ function Login() {
 
   const handleRegister = async () => {
     try {
-      await axios.post('https://banking-finance-api-production.up.railway.app/auth/register', { username, password });
+      await axios.post(`${API}/auth/register`, { username, password });
       setIsLogin(true);
       setError('');
       alert('Registered! Please login.');
